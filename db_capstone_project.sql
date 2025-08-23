@@ -1,19 +1,56 @@
-INSERT INTO MenuItems (MenuItemID, CourseName, Type, Price)
-VALUES
-(1, 'Olives','Starters',5),
-(2, 'Flatbread','Starters', 5),
-(3, 'Minestrone', 'Starters', 8),
-(4, 'Tomato bread','Starters', 8),
-(5, 'Falafel', 'Starters', 7),
-(6, 'Hummus', 'Starters', 5),
-(7, 'Greek salad', 'Main Courses', 15),
-(8, 'Bean soup', 'Main Courses', 12),
-(9, 'Pizza', 'Main Courses', 15),
-(10, 'Greek yoghurt','Desserts', 7),
-(11, 'Ice cream', 'Desserts', 6),
-(12, 'Cheesecake', 'Desserts', 4),
-(13, 'Athens White wine', 'Drinks', 25),
-(14, 'Corfu Red Wine', 'Drinks', 30),
-(15, 'Turkish Coffee', 'Drinks', 10),
-(16, 'Turkish Coffee', 'Drinks', 10),
-(17, 'Kabasa', 'Main Courses', 17);
+#using little lemon database
+use LittleLemonDM;
+
+#creating view
+CREATE VIEW OrdersView AS
+SELECT OrderID, Quantity, TotalCost FROM Orders
+WHERE Quantity > 2;
+
+# retrieving infomation from different tables using join
+SELECT Customers.CustomerID, CONCAT(Customers.FirstName, ' ', Customers.LastName) AS FullName, 
+Orders.OrderID, Orders.TotalCost, Menu.MenuName
+FROM Orders INNER JOIN Customers ON Orders.CustomerID = Customers.CustomerID
+INNER JOIN Menu ON Orders.MenuID = Menu.MenuID;
+
+# using subquery
+SELECT MenuName FROM Menu WHERE 2 < ANY (SELECT Quantity FROM Orders);
+
+# creating and using stored procedure
+DELIMITER //
+CREATE PROCEDURE GetMaxQuantity()
+BEGIN
+SELECT MAX(Quantity) AS 'Max quatity in order' FROM Orders;
+END //
+DELIMITER ;
+CALL GetMaxQuantity();
+
+# creating and using prepared statement
+PREPARE GetOrderDetail FROM 'SELECT OrderID, Quantity, TotalCost FROM Orders WHERE CustomerID = ?';
+SET @id = 1;
+EXECUTE GetOrderDetail USING @id;
+
+# creating and calling stored procedure with in parameter
+DELIMITER //
+CREATE PROCEDURE CancelOrder(IN order_id int)
+BEGIN
+DELETE FROM OrderDeliveryStatus WHERE OrderID = order_id;
+DELETE FROM Orders WHERE OrderID = order_id;
+SELECT CONCAT('Order ', order_id, ' is cancelled') AS Confirmation;
+END //
+DELIMITER ;
+
+CALL CancelOrder(5);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
