@@ -91,24 +91,40 @@ DELIMITER ;
 
 CALL AddValidBooking('2022-12-17', 6);
 
+#creating stored procedure to add booking
+DELIMITER //
+CREATE PROCEDURE AddBooking(IN b_id INT, IN cus_id INT, IN booking_date DATE, IN table_number INT)
+BEGIN
+INSERT INTO Bookings (BookingID, BookingDate, TableNo, CustomerID)
+VALUES
+(b_id, booking_date, table_number, cus_id);
+SELECT 'New booking added' AS 'Confirmation';
+END //
+DELIMITER ;
 
+CALL AddBooking(9, 3, '2022-12-30', 4);
 
+#creating stored procedure to update booking
+DELIMITER //
+CREATE PROCEDURE UpdateBooking(IN b_id INT, IN booking_date DATE)
+BEGIN
+UPDATE Bookings
+SET BookingDate = booking_date
+WHERE BookingID = b_id;
+SELECT CONCAT('Booking ', b_id, 'was updated') AS 'Confirmation';
+END //
+DELIMITER ;
 
+CALL UpdateBooking(9, '2022-12-17');
 
+#creating stored procedure to cancel booking
+DELIMITER //
+CREATE PROCEDURE CancelBooking(IN b_id INT)
+BEGIN
+DELETE FROM Bookings
+WHERE BookingID = b_id;
+SELECT CONCAT('Booking ', b_id, ' is cancelled') AS 'Confirmation';
+END //
+DELIMITER ;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+CALL CancelBooking(9);
