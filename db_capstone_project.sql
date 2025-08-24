@@ -41,6 +41,64 @@ DELIMITER ;
 
 CALL CancelOrder(5);
 
+#populating Bookings table with data
+INSERT INTO Bookings (BookingID, BookingDate, TableNo, CustomerID)
+VALUES
+(1, '2022-10-10', 5, 1),
+(2, '2022-11-12', 3, 3),
+(3, '2022-10-11', 2, 2),
+(4, '2022-10-13', 2, 1);
+
+#creating stored procedure to check whether table is already booked
+DELIMITER //
+CREATE PROCEDURE CheckBooking(IN booking_date DATE, IN table_number INT)
+BEGIN
+DECLARE booking_count INT;
+SELECT COUNT(*) INTO booking_count 
+FROM Bookings
+WHERE BookingDate = booking_date AND TableNo = table_number;
+IF booking_count = 0 THEN
+SELECT CONCAT('Table ', table_number, ' could be booked') AS 'Booking Status';
+ELSE
+SELECT CONCAT('Table ', table_number, ' is already booked') AS 'Booking Status';
+END IF;
+END //
+DELIMITER ;
+
+CALL CheckBooking('2022-11-12', 3);
+
+#creating stored procedure to add booking if it is possible
+DELIMITER //
+CREATE PROCEDURE AddValidBooking(IN booking_date DATE, IN table_number INT)
+BEGIN
+DECLARE booking_count INT;
+START TRANSACTION;
+SELECT COUNT(*) INTO booking_count 
+FROM Bookings
+WHERE BookingDate = booking_date AND TableNo = table_number;
+IF booking_count = 0 THEN
+INSERT INTO Bookings (BookingDate, TableNo)
+VALUES
+(booking_date, table_number);
+SELECT 'Booking was succesful' AS 'Booking Status';
+COMMIT;
+ELSE
+SELECT CONCAT('Table ', table_number, ' is already booked. Booking cancelled') AS 'Booking Status';
+ROLLBACK;
+END IF;
+END //
+DELIMITER ;
+
+CALL AddValidBooking('2022-12-17', 6);
+
+
+
+
+
+
+
+
+
 
 
 
